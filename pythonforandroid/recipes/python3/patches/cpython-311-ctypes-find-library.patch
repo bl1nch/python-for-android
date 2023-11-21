@@ -1,5 +1,5 @@
---- Python-3.11.5/Lib/ctypes/util.py	2023-08-24 17:39:18.000000000 +0530
-+++ Python-3.11.5.mod/Lib/ctypes/util.py	2023-11-18 22:12:17.356160615 +0530
+--- Python-3.11.6/Lib/ctypes/util.py	2023-08-24 17:39:18.000000000 +0530
++++ Python-3.11.6.mod/Lib/ctypes/util.py	2023-11-18 22:12:17.356160615 +0530
 @@ -4,7 +4,15 @@
  import sys
  
