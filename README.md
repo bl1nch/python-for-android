@@ -37,7 +37,7 @@ to install and begin creating APKs and AABs.
 
     pip install python-for-android
 
-(for the develop branch: `pip install git+https://github.com/kivy/python-for-android.git`)
+(for the develop branch: `pip install git+https://github.com/flet-dev/python-for-android.git@3.11.6`)
 
 Test that the install works with:
 
