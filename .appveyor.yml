@@ -31,9 +31,9 @@ install:
 # install Fortran compiler
 - curl -LO https://github.com/mzakharo/android-gfortran/releases/download/r21e/$ANDROID_NDK_GFORTRAN_ARCHIVE_ARM64
 - curl -LO https://github.com/mzakharo/android-gfortran/releases/download/r21e/$ANDROID_NDK_GFORTRAN_ARCHIVE_ARM
-- mkdir  $LEGACY_NDK/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/
+- mkdir -p $LEGACY_NDK/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/
 - tar -xf $ANDROID_NDK_GFORTRAN_ARCHIVE_ARM64 -C $LEGACY_NDK/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/ --strip-components 1
-- mkdir  $LEGACY_NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/
+- mkdir -p $LEGACY_NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/
 - tar -xf $ANDROID_NDK_GFORTRAN_ARCHIVE_ARM -C $LEGACY_NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/ --strip-components 1
 
 # install Kivy for Android
