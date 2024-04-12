@@ -6,6 +6,8 @@ environment:
   LEGACY_NDK_VERSION: 21.4.7075529
   LEGACY_NDK: $ANDROID_SDK_ROOT/ndk/$LEGACY_NDK_VERSION
   SDK_VERSION: android-33
+  ANDROID_NDK_GFORTRAN_ARCHIVE_ARM64: gcc-arm64-linux-x86_64.tar.bz2
+  ANDROID_NDK_GFORTRAN_ARCHIVE_ARM: gcc-arm-linux-x86_64.tar.bz2
 
 stack:
 - python 3.12
@@ -25,6 +27,14 @@ install:
 - echo "y" | sdkmanager --install "ndk;$NDK_VERSION" --channel=3 > /dev/null
 - echo "y" | sdkmanager --install "ndk;$LEGACY_NDK_VERSION" --channel=3 > /dev/null
 - echo "y" | sdkmanager --install "platforms;$SDK_VERSION" > /dev/null
+
+# install Fortran compiler
+- curl -LO https://github.com/mzakharo/android-gfortran/releases/download/r21e/$ANDROID_NDK_GFORTRAN_ARCHIVE_ARM64
+- curl -LO https://github.com/mzakharo/android-gfortran/releases/download/r21e/$ANDROID_NDK_GFORTRAN_ARCHIVE_ARM
+- mkdir  $(LEGACY_NDK)/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/
+- tar -xf $(ANDROID_NDK_GFORTRAN_ARCHIVE_ARM64) -C $(LEGACY_NDK)/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/ --strip-components 1
+- mkdir  $(LEGACY_NDK)/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/
+- tar -xf $(ANDROID_NDK_GFORTRAN_ARCHIVE_ARM) -C $(LEGACY_NDK)/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-x86_64/ --strip-components 1
 
 # install Kivy for Android
 - pip3 install .
