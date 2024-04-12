@@ -1,0 +1,30 @@
+image: ubuntu2004
+
+stack:
+- python 3.12
+
+install:
+# update build version
+- ps: |
+    if ($env:APPVEYOR_REPO_TAG_NAME) {
+      $v = $env:APPVEYOR_REPO_TAG_NAME.replace("v", "")
+    } else {
+      $cv = [version](git describe --abbrev=0).substring(1)
+      $v = "$($cv.major).$($cv.minor+1).0+$($env:APPVEYOR_BUILD_NUMBER)"
+    }
+    Update-AppveyorBuild -Version $v
+
+# install NDK
+- export ANDROID_SDK_ROOT="/usr/lib/android-sdk"
+- export NDK_VERSION=25.2.9519653
+- export SDK_VERSION=android-33
+- echo "y" | sdkmanager --install "ndk;$NDK_VERSION" --channel=3 > /dev/null
+- echo "y" | sdkmanager --install "platforms;$SDK_VERSION" > /dev/null
+
+# install Kivy for Android
+- pip3 install .
+- pip3 install --upgrade cython
+- p4a --help
+
+build_script:
+- p4a create --requirements python3 --arch arm64-v8a --arch armeabi-v7a --arch x86_64 --sdk-dir $ANDROID_SDK_ROOT --ndk-dir $ANDROID_SDK_ROOT/ndk/$NDK_VERSION --dist-name serious_python
