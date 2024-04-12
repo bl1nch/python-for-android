@@ -1,5 +1,12 @@
 image: ubuntu2004
 
+environment:
+  ANDROID_SDK_ROOT: /usr/lib/android-sdk
+  NDK_VERSION: 25.2.9519653
+  LEGACY_NDK_VERSION: 21.4.7075529
+  LEGACY_NDK: $ANDROID_SDK_ROOT/ndk/$LEGACY_NDK_VERSION
+  SDK_VERSION: android-33
+
 stack:
 - python 3.12
 
@@ -15,10 +22,8 @@ install:
     Update-AppveyorBuild -Version $v
 
 # install NDK
-- export ANDROID_SDK_ROOT="/usr/lib/android-sdk"
-- export NDK_VERSION=25.2.9519653
-- export SDK_VERSION=android-33
 - echo "y" | sdkmanager --install "ndk;$NDK_VERSION" --channel=3 > /dev/null
+- echo "y" | sdkmanager --install "ndk;$LEGACY_NDK_VERSION" --channel=3 > /dev/null
 - echo "y" | sdkmanager --install "platforms;$SDK_VERSION" > /dev/null
 
 # install Kivy for Android
