@@ -9,7 +9,7 @@ environment:
   ANDROID_NDK_GFORTRAN_ARCHIVE_ARM64: gcc-arm64-linux-x86_64.tar.bz2
   ANDROID_NDK_GFORTRAN_ARCHIVE_ARM: gcc-arm-linux-x86_64.tar.bz2
   DIST_NAME: mydist
-  DIST_PATH: $HOME/.local/share/python-for-android/dists/$DIST_NAME
+  DIST_PATH: /home/appveyor/.local/share/python-for-android/dists/$DIST_NAME
 
 stack:
 - python 3.12
