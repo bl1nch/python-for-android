@@ -53,7 +53,7 @@ build_script:
     }
 
     declare -A packages
-    packages["dist"]="$APPVEYOR_BUILD_VERSION"
+    packages["python3"]="3.11.6"
     packages["setuptools"]="69.2.0"
     packages["cython"]="0.29.36"
     packages["numpy"]="1.22.3"
