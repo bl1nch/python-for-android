@@ -32,6 +32,7 @@ install:
 
 # install Rust
 - curl https://sh.rustup.rs -sSf | sh -s -- -y
+- . "$HOME/.cargo/env"
 
 # install Fortran compiler
 - curl -LO https://github.com/mzakharo/android-gfortran/releases/download/r21e/$ANDROID_NDK_GFORTRAN_ARCHIVE_ARM64
