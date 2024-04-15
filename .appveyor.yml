@@ -30,6 +30,9 @@ install:
 - echo "y" | sdkmanager --install "ndk;$LEGACY_NDK_VERSION" --channel=3 > /dev/null
 - echo "y" | sdkmanager --install "platforms;$SDK_VERSION" > /dev/null
 
+# install Rust
+- curl https://sh.rustup.rs -sSf | sh
+
 # install Fortran compiler
 - curl -LO https://github.com/mzakharo/android-gfortran/releases/download/r21e/$ANDROID_NDK_GFORTRAN_ARCHIVE_ARM64
 - curl -LO https://github.com/mzakharo/android-gfortran/releases/download/r21e/$ANDROID_NDK_GFORTRAN_ARCHIVE_ARM
@@ -60,6 +63,7 @@ build_script:
         "numpy" "1.22.3"
         "cryptography" "42.0.1"
         "bcrypt" "3.1.7"
+        "websockets" "12.0"
     )
 
     for ((i = 0; i < ${#packages[@]}; i += 2)); do
