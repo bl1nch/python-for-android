@@ -52,14 +52,17 @@ build_script:
         exit "$1"
     }
 
-    declare -A packages
-    packages["python3"]="3.11.6"
-    #packages["setuptools"]="69.2.0"
-    #packages["cython"]="0.29.36"
-    #packages["numpy"]="1.22.3"
+    packages=(
+        "python3" "3.11.6"
+        "setuptools" "69.2.0"
+        "cython" "0.29.36"
+        "numpy" "1.22.3"
+    )
 
-    for package in "${!packages[@]}"; do
-        version="${packages[$package]}"
+    for ((i = 0; i < ${#packages[@]}; i += 2)); do
+        package="${packages[i]}"
+        version="${packages[i + 1]}"
+        
         echo "Packaging $package $version"
 
         p4a create --requirements $package --arch arm64-v8a --sdk-dir $ANDROID_SDK_ROOT --ndk-dir $ANDROID_SDK_ROOT/ndk/$NDK_VERSION --dist-name $DIST_NAME || _abort $?
