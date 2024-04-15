@@ -38,3 +38,5 @@ testapps/build/
 
 # Dolphin (the KDE file manager autogenerates the file `.directory`)
 .directory
+
+.venv/
