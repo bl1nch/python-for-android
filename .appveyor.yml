@@ -46,10 +46,26 @@ install:
 build_script:
 - mkdir out
 #- p4a create --requirements python3 --arch arm64-v8a --arch armeabi-v7a --arch x86_64 --sdk-dir $ANDROID_SDK_ROOT --ndk-dir $ANDROID_SDK_ROOT/ndk/$NDK_VERSION --dist-name serious_python
-- p4a create --requirements python3 --arch arm64-v8a --sdk-dir $ANDROID_SDK_ROOT --ndk-dir $ANDROID_SDK_ROOT/ndk/$NDK_VERSION --dist-name $DIST_NAME
-- ls -al $DIST_PATH
-- python ci/zip_diff.py $DIST_PATH out/python-for-android-dist-$APPVEYOR_BUILD_VERSION.zip
-- python ci/update_index.py out/android-dist.json dist $APPVEYOR_BUILD_VERSION
+- sh: |
+    function _abort() {
+        echo "Aborting." 1>&2
+        exit "$1"
+    }
+
+    declare -A packages
+    packages["dist"]="$APPVEYOR_BUILD_VERSION"
+    packages["setuptools"]="69.2.0"
+    packages["cython"]="0.29.36"
+    packages["numpy"]="1.22.3"
+
+    for package in "${!packages[@]}"; do
+        version="${packages[$package]}"
+        echo "Packaging $package $version"
+
+        p4a create --requirements $package --arch arm64-v8a --sdk-dir $ANDROID_SDK_ROOT --ndk-dir $ANDROID_SDK_ROOT/ndk/$NDK_VERSION --dist-name $DIST_NAME || _abort $?
+        python ci/zip_diff.py $DIST_PATH out/python-for-android-$package-$version.zip
+        python ci/update_index.py out/android-dist.json $package $version
+    done
 
 artifacts:
 - path: out/*
