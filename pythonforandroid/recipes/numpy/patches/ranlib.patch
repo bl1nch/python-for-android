@@ -1,7 +1,8 @@
-diff -Naur numpy.orig/numpy/distutils/unixccompiler.py numpy/numpy/distutils/unixccompiler.py
---- numpy.orig/numpy/distutils/unixccompiler.py	2022-05-28 10:22:10.000000000 +0200
-+++ numpy/numpy/distutils/unixccompiler.py	2022-05-28 10:22:24.000000000 +0200
-@@ -124,6 +124,7 @@
+diff --git a/numpy/distutils/unixccompiler.py b/numpy/distutils/unixccompiler.py
+index 4884960..d46f23e 100644
+--- a/numpy/distutils/unixccompiler.py
++++ b/numpy/distutils/unixccompiler.py
+@@ -124,6 +124,7 @@ def UnixCCompiler_create_static_lib(self, objects, output_libname,
          # platform intelligence here to skip ranlib if it's not
          # needed -- or maybe Python's configure script took care of
          # it for us, hence the check for leading colon.
