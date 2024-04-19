@@ -37,18 +37,6 @@ index 9e98f8e..5483c03 100644
      #define npy_ftell ftello
  #else
      #define npy_ftell ftell
-diff --git a/numpy/core/setup.py b/numpy/core/setup.py
-index a05b5da..f1d0174 100644
---- a/numpy/core/setup.py
-+++ b/numpy/core/setup.py
-@@ -647,7 +647,7 @@ def generate_api(ext, build_dir):
-     if sys.platform[:3] == "aix":
-         config.add_define_macros([("_LARGE_FILES", None)])
-     else:
--        config.add_define_macros([("_FILE_OFFSET_BITS", "64")])
-+        # config.add_define_macros([("_FILE_OFFSET_BITS", "64")])
-         config.add_define_macros([('_LARGEFILE_SOURCE', '1')])
-         config.add_define_macros([('_LARGEFILE64_SOURCE', '1')])
  
 diff --git a/numpy/distutils/fcompiler/__init__.py b/numpy/distutils/fcompiler/__init__.py
 index 5160e2a..073eee1 100644
@@ -126,42 +114,3 @@ index 2f8a8dc..2ed1d00 100644
  
  fgetdims2 = """\
        end if
-diff --git a/numpy/meson.build b/numpy/meson.build
-index a8f810c..7dc315c 100644
---- a/numpy/meson.build
-+++ b/numpy/meson.build
-@@ -47,7 +47,7 @@ if host_machine.system() == 'aix'
-   cflags_large_file_support += '-D_LARGE_FILES'
- else
-   cflags_large_file_support += [
--    '-D_FILE_OFFSET_BITS=64',
-+    #'-D_FILE_OFFSET_BITS=64',
-     '-D_LARGEFILE_SOURCE=1',
-     '-D_LARGEFILE64_SOURCE=1',
-   ]
-diff --git a/numpy/random/setup.py b/numpy/random/setup.py
-index cd9ad97..e8df3e7 100644
---- a/numpy/random/setup.py
-+++ b/numpy/random/setup.py
-@@ -23,7 +23,7 @@ def generate_libraries(ext, build_dir):
-     if sys.platform[:3] == 'aix':
-         defs = [('_LARGE_FILES', None)]
-     else:
--        defs = [('_FILE_OFFSET_BITS', '64'),
-+        defs = [#('_FILE_OFFSET_BITS', '64'),
-                 ('_LARGEFILE_SOURCE', '1'),
-                 ('_LARGEFILE64_SOURCE', '1')]
- 
-diff --git a/vendored-meson/meson/mesonbuild/compilers/compilers.py b/vendored-meson/meson/mesonbuild/compilers/compilers.py
-index 8e29816..76dccb7 100644
---- a/vendored-meson/meson/mesonbuild/compilers/compilers.py
-+++ b/vendored-meson/meson/mesonbuild/compilers/compilers.py
-@@ -1143,7 +1143,7 @@ def get_largefile_args(self) -> T.List[str]:
-             # https://code.google.com/p/android/issues/detail?id=64613
-             #
-             # If this breaks your code, fix it! It's been 20+ years!
--            return ['-D_FILE_OFFSET_BITS=64']
-+            return []
-             # We don't enable -D_LARGEFILE64_SOURCE since that enables
-             # transitionary features and must be enabled by programs that use
-             # those features explicitly.

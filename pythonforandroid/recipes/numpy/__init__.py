@@ -1,12 +1,11 @@
 import glob
 import shutil
 from multiprocessing import cpu_count
-from os.path import join
 
 import sh
 
 from pythonforandroid.logger import info, shprint
-from pythonforandroid.recipe import CompiledComponentsPythonRecipe, Recipe
+from pythonforandroid.recipe import CompiledComponentsPythonRecipe
 from pythonforandroid.util import current_directory
 
 
@@ -22,10 +21,7 @@ class NumpyRecipe(CompiledComponentsPythonRecipe):
     call_hostpython_via_targetpython = False
 
     patches = [
-        # join("patches", "remove-default-paths.patch"),
-        # join("patches", "add_libm_explicitly_to_build.patch"),
-        # join("patches", "ranlib.patch"),
-        join("patches", "64-bit.patch"),
+        "patches/p4a.patch",
     ]
 
     def get_recipe_env(self, arch=None, with_flags_in_cc=True):
@@ -40,7 +36,7 @@ class NumpyRecipe(CompiledComponentsPythonRecipe):
         env["NPY_DISABLE_SVML"] = "1"
         env["MATHLIB"] = "m"
         env["SETUPTOOLS_USE_DISTUTILS"] = "stdlib"
-
+        
         return env
 
     def build_arch(self, arch):
