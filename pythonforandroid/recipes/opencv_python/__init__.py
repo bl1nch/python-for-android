@@ -14,7 +14,7 @@ class OpencvPythonRecipe(CompiledComponentsPythonRecipe):
     url = "https://files.pythonhosted.org/packages/25/72/da7c69a3542071bf1e8f65336721b8b2659194425438d988f79bc14ed9cc/opencv-python-4.9.0.80.tar.gz"
     depends = ["setuptools", "numpy"]
     patches = ["patches/p4a_build.patch"]
-    hostpython_prerequisites = ["scikit-build", "packaging", "wheel"]
+    hostpython_prerequisites = ["scikit-build", "packaging", "wheel", "distro"]
     call_hostpython_via_targetpython = False
 
     def build_arch(self, arch):
