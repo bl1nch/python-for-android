@@ -1,0 +1,167 @@
+diff --git a/numpy/__init__.py b/numpy/__init__.py
+index 91da496..ad5fca0 100644
+--- a/numpy/__init__.py
++++ b/numpy/__init__.py
+@@ -122,6 +122,15 @@
+ 
+ if __NUMPY_SETUP__:
+     sys.stderr.write('Running from numpy source directory.\n')
++
++    # Chaquopy: the module namespace was originally empty in this mode, but the following
++    # things are needed by packages which use NumPy's native API.
++    def get_include():
++        import os
++        return os.path.join(os.path.dirname(__file__), 'core', 'include')
++
++    from .version import version as __version__
++
+ else:
+     # Allow distributors to run custom init code before importing numpy.core
+     from . import _distributor_init
+diff --git a/numpy/core/include/numpy/npy_common.h b/numpy/core/include/numpy/npy_common.h
+index 9e98f8e..5483c03 100644
+--- a/numpy/core/include/numpy/npy_common.h
++++ b/numpy/core/include/numpy/npy_common.h
+@@ -157,12 +157,12 @@
+         #error Unsupported size for type off_t
+     #endif
+ #else
+-#ifdef HAVE_FSEEKO
++#ifdef HAVE_FSEEKO1
+     #define npy_fseek fseeko
+ #else
+     #define npy_fseek fseek
+ #endif
+-#ifdef HAVE_FTELLO
++#ifdef HAVE_FTELLO1
+     #define npy_ftell ftello
+ #else
+     #define npy_ftell ftell
+diff --git a/numpy/core/setup.py b/numpy/core/setup.py
+index a05b5da..f1d0174 100644
+--- a/numpy/core/setup.py
++++ b/numpy/core/setup.py
+@@ -647,7 +647,7 @@ def generate_api(ext, build_dir):
+     if sys.platform[:3] == "aix":
+         config.add_define_macros([("_LARGE_FILES", None)])
+     else:
+-        config.add_define_macros([("_FILE_OFFSET_BITS", "64")])
++        # config.add_define_macros([("_FILE_OFFSET_BITS", "64")])
+         config.add_define_macros([('_LARGEFILE_SOURCE', '1')])
+         config.add_define_macros([('_LARGEFILE64_SOURCE', '1')])
+ 
+diff --git a/numpy/distutils/fcompiler/__init__.py b/numpy/distutils/fcompiler/__init__.py
+index 5160e2a..073eee1 100644
+--- a/numpy/distutils/fcompiler/__init__.py
++++ b/numpy/distutils/fcompiler/__init__.py
+@@ -334,9 +334,15 @@ def set_exe(exe_key, f77=None, f90=None):
+                 unique_possibles.append(e)
+ 
+             for exe in unique_possibles:
+-                fc_exe = cached_find_executable(exe)
++                #fc_exe = cached_find_executable(exe)
++                # Chaquopy: handle multi-word executables like LDSHARED="path/to/gcc -shared"
++                exe_split = split_quoted(exe)
++                fc_exe = cached_find_executable(exe_split[0])
+                 if fc_exe:
+                     cmd[0] = fc_exe
++                    for arg in exe_split[1:]:
++                        if arg not in cmd:
++                            cmd.append(arg)
+                     return fc_exe
+             self.set_command(exe_key, None)
+             return None
+diff --git a/numpy/distutils/npy_pkg_config.py b/numpy/distutils/npy_pkg_config.py
+index f6e3ad3..24cfed1 100644
+--- a/numpy/distutils/npy_pkg_config.py
++++ b/numpy/distutils/npy_pkg_config.py
+@@ -307,13 +307,11 @@ def _read_config(f):
+     # there is no pkgdir variable defined, pkgdir is automatically defined to
+     # the path of pkgname. This requires the package to be imported to work
+     if not 'pkgdir' in vars and "pkgname" in vars:
++        import imp
+         pkgname = vars["pkgname"]
+-        if not pkgname in sys.modules:
+-            raise ValueError("You should import %s to get information on %s" %
+-                             (pkgname, meta["name"]))
+-
+-        mod = sys.modules[pkgname]
+-        vars["pkgdir"] = _escape_backslash(os.path.dirname(mod.__file__))
++        pkgs = pkgname.split(".")
++        _, top_dir, _ = imp.find_module(pkgs[0])
++        vars["pkgdir"] = _escape_backslash(os.path.join(top_dir, *pkgs[1:]))
+ 
+     return LibraryInfo(name=meta["name"], description=meta["description"],
+             version=meta["version"], sections=sections, vars=VariableSet(vars))
+diff --git a/numpy/f2py/f90mod_rules.py b/numpy/f2py/f90mod_rules.py
+index 2f8a8dc..2ed1d00 100644
+--- a/numpy/f2py/f90mod_rules.py
++++ b/numpy/f2py/f90mod_rules.py
+@@ -39,6 +39,19 @@ def findf90modules(m):
+             ret = ret + findf90modules(b)
+     return ret
+ 
++# Chaquopy: get this from the generated header file rather than the build machine.
++import os
++import pkgutil
++numpyconfig_h = pkgutil.get_data("numpy", "core/include/numpy/_numpyconfig.h").decode("UTF-8")
++for line in numpyconfig_h.splitlines():
++    words = line.split()
++    # This is valid because npy_common.h has `#define NPY_SIZEOF_INTP NPY_SIZEOF_PY_INTPTR_T`.
++    if (len(words) == 3) and (words[:2] == ["#define", "NPY_SIZEOF_PY_INTPTR_T"]):
++        SIZEOF_INTP = int(words[2])
++        break
++else:
++    raise Exception("Couldn't determine SIZEOF_INTP")
++
+ fgetdims1 = """\
+       external f2pysetdata
+       logical ns
+@@ -55,7 +68,7 @@ def findf90modules(m):
+             deallocate(d)
+          end if
+       end if
+-      if ((.not.allocated(d)).and.(s(1).ge.1)) then""" % np.intp().itemsize
++      if ((.not.allocated(d)).and.(s(1).ge.1)) then""" % SIZEOF_INTP
+ 
+ fgetdims2 = """\
+       end if
+diff --git a/numpy/meson.build b/numpy/meson.build
+index a8f810c..7dc315c 100644
+--- a/numpy/meson.build
++++ b/numpy/meson.build
+@@ -47,7 +47,7 @@ if host_machine.system() == 'aix'
+   cflags_large_file_support += '-D_LARGE_FILES'
+ else
+   cflags_large_file_support += [
+-    '-D_FILE_OFFSET_BITS=64',
++    #'-D_FILE_OFFSET_BITS=64',
+     '-D_LARGEFILE_SOURCE=1',
+     '-D_LARGEFILE64_SOURCE=1',
+   ]
+diff --git a/numpy/random/setup.py b/numpy/random/setup.py
+index cd9ad97..e8df3e7 100644
+--- a/numpy/random/setup.py
++++ b/numpy/random/setup.py
+@@ -23,7 +23,7 @@ def generate_libraries(ext, build_dir):
+     if sys.platform[:3] == 'aix':
+         defs = [('_LARGE_FILES', None)]
+     else:
+-        defs = [('_FILE_OFFSET_BITS', '64'),
++        defs = [#('_FILE_OFFSET_BITS', '64'),
+                 ('_LARGEFILE_SOURCE', '1'),
+                 ('_LARGEFILE64_SOURCE', '1')]
+ 
+diff --git a/vendored-meson/meson/mesonbuild/compilers/compilers.py b/vendored-meson/meson/mesonbuild/compilers/compilers.py
+index 8e29816..76dccb7 100644
+--- a/vendored-meson/meson/mesonbuild/compilers/compilers.py
++++ b/vendored-meson/meson/mesonbuild/compilers/compilers.py
+@@ -1143,7 +1143,7 @@ def get_largefile_args(self) -> T.List[str]:
+             # https://code.google.com/p/android/issues/detail?id=64613
+             #
+             # If this breaks your code, fix it! It's been 20+ years!
+-            return ['-D_FILE_OFFSET_BITS=64']
++            return []
+             # We don't enable -D_LARGEFILE64_SOURCE since that enables
+             # transitionary features and must be enabled by programs that use
+             # those features explicitly.

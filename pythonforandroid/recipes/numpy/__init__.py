@@ -16,17 +16,16 @@ class NumpyRecipe(CompiledComponentsPythonRecipe):
     url = "https://files.pythonhosted.org/packages/65/6e/09db70a523a96d25e115e71cc56a6f9031e7b8cd166c1ac8438307c14058/numpy-1.26.4.tar.gz"
     site_packages_name = "numpy"
     depends = ["cython"]
-
-    # This build specifically requires setuptools version 59.2.0
-    hostpython_prerequisites = ["setuptools==59.2.0"]
+    hostpython_prerequisites = ["setuptools"]
 
     install_in_hostpython = True
     call_hostpython_via_targetpython = False
 
     patches = [
-        join("patches", "remove-default-paths.patch"),
-        join("patches", "add_libm_explicitly_to_build.patch"),
-        join("patches", "ranlib.patch"),
+        # join("patches", "remove-default-paths.patch"),
+        # join("patches", "add_libm_explicitly_to_build.patch"),
+        # join("patches", "ranlib.patch"),
+        join("patches", "64-bit.patch"),
     ]
 
     def get_recipe_env(self, arch=None, with_flags_in_cc=True):
@@ -40,20 +39,13 @@ class NumpyRecipe(CompiledComponentsPythonRecipe):
         # See: https://github.com/numpy/numpy/issues/21196
         env["NPY_DISABLE_SVML"] = "1"
         env["MATHLIB"] = "m"
+        env["SETUPTOOLS_USE_DISTUTILS"] = "stdlib"
 
         return env
 
     def build_arch(self, arch):
-        self.hostpython_prerequisites = ["setuptools==59.2.0"]
         self.install_hostpython_prerequisites()
-
         super().build_arch(arch)
-
-        # Post build step to restore setuptools version
-        self.hostpython_prerequisites = [
-            "setuptools=={}".format(Recipe.get_recipe("setuptools", self.ctx).version)
-        ]
-        self.install_hostpython_prerequisites()
 
     def _build_compiled_components(self, arch):
         info("Building compiled components in {}".format(self.name))
@@ -109,6 +101,7 @@ class NumpyRecipe(CompiledComponentsPythonRecipe):
     def get_hostrecipe_env(self, arch):
         env = super().get_hostrecipe_env(arch)
         env["RANLIB"] = shutil.which("ranlib")
+        env["SETUPTOOLS_USE_DISTUTILS"] = "stdlib"
         return env
 
 
