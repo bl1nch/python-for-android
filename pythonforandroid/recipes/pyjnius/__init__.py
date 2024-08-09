@@ -6,7 +6,7 @@ from os.path import join
 
 
 class PyjniusRecipe(CythonRecipe):
-    version = 'flet'
+    version = 'flet-integration'
     url = 'https://github.com/bl1nch/pyjnius/archive/{version}.zip'
     name = 'pyjnius'
     depends = [('genericndkbuild', 'sdl2'), 'six']
